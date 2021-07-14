@@ -22,19 +22,20 @@ const drinkSchema = new mongoose.Schema({
 
 server.get('/drinks' , drinkHandler);
 server.post('/addtofavorite', addToFav);
-server.get('/getFavDrink', getFavDrink);
+server.get('/getFav', getFavDrink);
 server.delete('/deletFav', deleteFav);
 server.put('/updateFav',updateHandler);
 
 
 function drinkHandler (req,res){
-    const url =`https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Non_Alcoholic`;
-    axios.get(url).then(result =>{
-        res.send(result.data);
+    let url = 'https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Non_Alcoholic';
+    const data = axios.get(url).then(data => {
+        res.send(data.data.drinks)
     })
 }
 
 function addToFav (req , res){
+
     const {strDrink ,strDrinkThumb} = req.body;
     const newDrink = new drinkModel({
         strDrink:strDrink,
@@ -50,23 +51,25 @@ function getFavDrink (req,res){
 }
 
 function deleteFav(req,res){
-    const id = req.quary.id;
-    drinkModel.deleteOne({idDrink:id},(err,data)=>{
+    const id= req.query.id;
+    console.log(id);
+    drinkModel.deleteOne({_id:id},(err,data)=>{
         drinkModel.find({},(err,data)=>{
-            res.send(data);
+            res.send(data)
         })
     })
 }
 
 function updateHandler (req,res){
-    const {strDrink ,strDrinkThumb ,id} = req.body;
-    drinkModel.find({idDrink:id},(err,data)=>{
-        data[0].strDrink =strDrink;
-        data[0].strDrinkThumb=strDrinkThumb;
-        data[0].save()
-        .then(()=>{
+    const id= req.query.id;
+    const name=req.query.name;
+    const url=req.query.url;
+    drinkModel.find({_id:id},(err,data)=>{
+        data[0].name=name;
+        data[0].url=url;
+        data[0].save().then(()=>{
             drinkModel.find({},(err,data)=>{
-                res.send(data);
+                res.send(data)
             })
         })
     })
